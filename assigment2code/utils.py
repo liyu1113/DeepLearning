@@ -1,0 +1,105 @@
+import os
+import torch
+import torchvision
+import torchvision.transforms as transforms
+# https://github.com/facebook/fb.resnet.torch/blob/master/INSTALL.md#download-the-imagenet-dataset
+
+def prepare_dataloaders(args):
+    '''
+        ImageNET datasets.
+        pytorch.org/docs/stable/torchvision/datasets.html#imagenet
+    '''
+
+    if args.datasets == 'cifar10':
+        train_transform = transform=transforms.Compose([
+                                   transforms.RandomCrop(32, padding=4), #padding=4
+                                   transforms.RandomHorizontalFlip(),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.485, 0.456, 0.406),
+                                                        (0.229, 0.224, 0.225)),
+                               ])
+        valid_transform = transform=transforms.Compose([
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.485, 0.456, 0.406),
+                                                        (0.229, 0.224, 0.225)),
+                               ])
+        train_dataset = torchvision.datasets.CIFAR10(
+            root='./data',
+            train=True,
+            download=True,
+            transform=train_transform
+        )
+        valid_dataset = torchvision.datasets.CIFAR10(
+            root='./data',
+            train=False,
+            download=True,
+            transform=valid_transform
+        )
+        print("args.datasets cifar 10")
+    elif args.datasets == 'cifar100':
+        train_transform = transform=transforms.Compose([
+                                   transforms.RandomCrop(32, padding=4),
+                                   transforms.RandomHorizontalFlip(),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.485, 0.456, 0.406),
+                                                        (0.229, 0.224, 0.225)),
+                               ])
+        valid_transform = transform=transforms.Compose([
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.485, 0.456, 0.406),
+                                                        (0.229, 0.224, 0.225)),
+                               ])
+        train_dataset = torchvision.datasets.CIFAR100(
+            root='./data',
+            train=True,
+            download=True,
+            transform=train_transform
+        )
+        valid_dataset = torchvision.datasets.CIFAR100(
+            root='./data',
+            train=False,
+            download=True,
+            transform=valid_transform
+        )
+        print("args.datasets cifar 100")
+    elif args.datasets == 'imagenet':
+        train_transform = transform=transforms.Compose([
+                                   transforms.Resize(256),
+                                   transforms.RandomCrop(224),
+                                   transforms.RandomHorizontalFlip(),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.485, 0.456, 0.406),
+                                                        (0.229, 0.224, 0.225)),
+                               ])
+        valid_transform = transform=transforms.Compose([
+                                   transforms.Resize(256),
+                                   transforms.CenterCrop(224),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.485, 0.456, 0.406),
+                                                        (0.229, 0.224, 0.225)),
+                               ])
+        # ImageNet 2012 Classification Dataset.
+        train_dataset = torchvision.datasets.ImageFolder(
+            root='/opt/data/common/ImageNet/ILSVRC2012/train',
+            transform=train_transform
+        )
+        valid_dataset = torchvision.datasets.ImageFolder(
+            root='/opt/data/common/ImageNet/ILSVRC2012/val',
+            transform=valid_transform
+        )
+        print("args.datasets imagenet")
+
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset,
+        batch_size=args.batch,
+        num_workers=args.workers,
+        shuffle=True
+    )
+    valid_loader = torch.utils.data.DataLoader(
+        valid_dataset,
+        batch_size=args.batch,
+        num_workers=args.workers
+    )
+
+
+    return train_loader, valid_loader, len(train_dataset), len(valid_dataset)
